@@ -98,7 +98,11 @@ public class FileExplorer {
             redirectAttributes.addFlashAttribute("message", "디렉터리입니다.");
             return "redirect:/fileExplorer/read";
         }
-        file.delete();
+        if (file.delete()) {
+            redirectAttributes.addFlashAttribute("message", "파일이 삭제되었습니다.");
+            return "redirect:/fileExplorer/read";
+        }
+        redirectAttributes.addFlashAttribute("message", "파일 삭제를 실패하였습니다.");
         return "redirect:/fileExplorer/read";
     }
 
@@ -110,7 +114,11 @@ public class FileExplorer {
             return "redirect:/fileExplorer/read";
         }
         File fileWithChangedName = new File(currentFile.getAbsolutePath().replace(currentFile.getName(), fileName));
-        currentFile.renameTo(fileWithChangedName);
+        if (currentFile.renameTo(fileWithChangedName)) {
+            redirectAttributes.addFlashAttribute("message", "파일 이름이 변경되었습니다.");
+            return "redirect:/fileExplorer/read";
+        }
+        redirectAttributes.addFlashAttribute("message", "파일 이름 변경를 실패하였습니다.");
         return "redirect:/fileExplorer/read";
     }
 }
