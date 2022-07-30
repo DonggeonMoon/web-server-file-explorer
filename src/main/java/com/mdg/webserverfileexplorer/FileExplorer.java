@@ -40,12 +40,10 @@ public class FileExplorer {
             return "right";
         }
         File file = new File(filePath);
-
         if (file.isDirectory()) {
             model.addAttribute("message", "디렉터리입니다.");
             return "right";
         }
-
         FileReader fileReader = new FileReader(file);
         StringBuilder stringBuilder = new StringBuilder(1000);
         int n;
@@ -60,9 +58,36 @@ public class FileExplorer {
 
     @GetMapping("/fileExplorer/add")
     public String addGet(String filePath, Model model) throws IOException {
+        File file = new File(filePath);
+        if (file.exists()) {
+            model.addAttribute("message", "파일이 이미 존재합니다.");
+            model.addAttribute("filePath", filePath);
+            return "right";
+        }
         model.addAttribute("message", "새로운 파일 작성");
         model.addAttribute("filePath", filePath);
         return "right";
+    }
+
+    @PostMapping("/fileExplorer/add")
+    public String addPost(String filePath, String fileName, String fileContent, RedirectAttributes redirectAttributes) throws IOException {
+        if (fileName == null) {
+            fileName = "";
+        }
+        File file = new File(filePath + fileName);
+        if (file.exists()) {
+            redirectAttributes.addFlashAttribute("message", "파일이 이미 존재합니다.");
+            return "redirect:/fileExplorer/read";
+        }
+        if (!file.createNewFile()) {
+            redirectAttributes.addFlashAttribute("message", "파일을 생성하지 못했습니다.");
+            return "redirect:/fileExplorer/read";
+        }
+        FileWriter fileWriter = new FileWriter(file);
+        fileWriter.write(fileContent);
+        fileWriter.flush();
+        fileWriter.close();
+        return "redirect:/fileExplorer/read";
     }
 
     @PostMapping("/fileExplorer/write")
@@ -74,7 +99,10 @@ public class FileExplorer {
         }
         if (file.isDirectory() && fileName != null) {
             file = new File(filePath + fileName);
-            file.createNewFile();
+            if (!file.createNewFile()) {
+                redirectAttributes.addFlashAttribute("message", "파일을 생성하지 못했습니다.");
+                return "redirect:/fileExplorer/read";
+            }
         }
         if (file.isDirectory()) {
             redirectAttributes.addFlashAttribute("message", "디렉터리입니다.");
