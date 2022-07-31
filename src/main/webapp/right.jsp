@@ -26,13 +26,15 @@
             <br/>
             <textarea name="fileContent" rows="50" cols="150">${data}</textarea>
             <button>수정</button>
-            <form action="/fileExplorer/delete" method="post" style="display:inline">
-                <input type="hidden" name="filePath" value="<c:out value="${filePath}"/>">
-                <button>삭제</button>
-            </form>
         </c:when>
         <c:otherwise/>
     </c:choose>
 </form>
+<c:if test="${data != '' && data != null}">
+    <form action="/fileExplorer/delete" method="post" style="display:inline">
+        <input type="hidden" name="filePath" value="<c:out value="${filePath}"/>">
+        <button>삭제</button>
+    </form>
+</c:if>
 </body>
 </html>
