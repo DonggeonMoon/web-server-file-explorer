@@ -40,6 +40,11 @@ public class FileExplorer {
             return "right";
         }
         File file = new File(filePath);
+        if (!file.exists()) {
+            model.addAttribute("message", "존재하지 않는 파일입니다.");
+            model.addAttribute("filePath", filePath);
+            return "right";
+        }
         if (file.isDirectory()) {
             model.addAttribute("message", "디렉터리입니다.");
             return "right";
@@ -59,13 +64,14 @@ public class FileExplorer {
     @GetMapping("/fileExplorer/add")
     public String addGet(String filePath, Model model) throws IOException {
         File file = new File(filePath);
-        if (file.exists()) {
-            model.addAttribute("message", "파일이 이미 존재합니다.");
+        if (!file.isDirectory()) {
+            model.addAttribute("message", "디렉터리가 아닙니다.");
             model.addAttribute("filePath", filePath);
             return "right";
         }
         model.addAttribute("message", "새로운 파일 작성");
         model.addAttribute("filePath", filePath);
+        model.addAttribute("data", "");
         return "right";
     }
 
@@ -75,6 +81,10 @@ public class FileExplorer {
             fileName = "";
         }
         File file = new File(filePath + fileName);
+        if (file.exists() && file.isDirectory()) {
+            redirectAttributes.addFlashAttribute("message", "디렉터리가 이미 존재합니다.");
+            return "redirect:/fileExplorer/read";
+        }
         if (file.exists()) {
             redirectAttributes.addFlashAttribute("message", "파일이 이미 존재합니다.");
             return "redirect:/fileExplorer/read";
@@ -93,6 +103,10 @@ public class FileExplorer {
     @PostMapping("/fileExplorer/write")
     public String writePost(String filePath, String fileName, String fileContent, RedirectAttributes redirectAttributes) throws IOException {
         File file = new File(filePath);
+        if (!file.exists() && file.isDirectory()) {
+            redirectAttributes.addFlashAttribute("message", "존재하지 않는 디렉터리입니다.");
+            return "redirect:/fileExplorer/read";
+        }
         if (!file.exists()) {
             redirectAttributes.addFlashAttribute("message", "존재하지 않는 파일입니다.");
             return "redirect:/fileExplorer/read";
@@ -118,6 +132,10 @@ public class FileExplorer {
     @PostMapping("/fileExplorer/delete")
     public String deletePost(String filePath, RedirectAttributes redirectAttributes) throws IOException {
         File file = new File(filePath);
+        if (!file.exists() && file.isDirectory()) {
+            redirectAttributes.addFlashAttribute("message", "존재하지 않는 디렉터리입니다.");
+            return "redirect:/fileExplorer/read";
+        }
         if (!file.exists()) {
             redirectAttributes.addFlashAttribute("message", "존재하지 않는 파일입니다.");
             return "redirect:/fileExplorer/read";
@@ -135,13 +153,17 @@ public class FileExplorer {
     }
 
     @PostMapping("/fileExplorer/rename")
-    public String renamePost(String filePath, String fileName, RedirectAttributes redirectAttributes) throws IOException {
+    public String renamePost(String filePath, String newName, RedirectAttributes redirectAttributes) throws IOException {
         File currentFile = new File(filePath);
+        if (!currentFile.exists() && currentFile.isDirectory()) {
+            redirectAttributes.addFlashAttribute("message", "존재하지 않는 디렉터리입니다.");
+            return "redirect:/fileExplorer/read";
+        }
         if (!currentFile.exists()) {
             redirectAttributes.addFlashAttribute("message", "존재하지 않는 파일입니다.");
             return "redirect:/fileExplorer/read";
         }
-        File fileWithChangedName = new File(currentFile.getAbsolutePath().replace(currentFile.getName(), fileName));
+        File fileWithChangedName = new File(currentFile.getAbsolutePath().replace(currentFile.getName(), newName));
         if (currentFile.renameTo(fileWithChangedName)) {
             redirectAttributes.addFlashAttribute("message", "파일 이름이 변경되었습니다.");
             return "redirect:/fileExplorer/read";

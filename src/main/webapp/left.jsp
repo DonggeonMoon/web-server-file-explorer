@@ -12,6 +12,8 @@ ${file}
 <br/>
 ---------------------------------------------
 <br/>
+<a href="/fileExplorer/add?filePath=${fn:replace(realPath, '\\', '/')}" target="frame_right">+ 파일 추가</a>
+<br/>
 <c:forEach var="item" items="${data}">
     <a href="/fileExplorer/read?filePath=${fn:replace(realPath, '\\', '/')}${fn:replace(item.getName(), '\\', '/')}" target="frame_right">${item.getName()}</a>
     <br/>
