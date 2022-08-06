@@ -62,7 +62,7 @@ public class FileExplorer {
     }
 
     @GetMapping("/fileExplorer/add")
-    public String addGet(String filePath, Model model) throws IOException {
+    public String addGet(String filePath, Model model) {
         File file = new File(filePath);
         if (!file.isDirectory()) {
             model.addAttribute("message", "디렉터리가 아닙니다.");
@@ -130,7 +130,7 @@ public class FileExplorer {
     }
 
     @PostMapping("/fileExplorer/delete")
-    public String deletePost(String filePath, RedirectAttributes redirectAttributes) throws IOException {
+    public String deletePost(String filePath, RedirectAttributes redirectAttributes) {
         File file = new File(filePath);
         if (!file.exists() && file.isDirectory()) {
             redirectAttributes.addFlashAttribute("message", "존재하지 않는 디렉터리입니다.");
@@ -153,7 +153,7 @@ public class FileExplorer {
     }
 
     @PostMapping("/fileExplorer/rename")
-    public String renamePost(String filePath, String newName, RedirectAttributes redirectAttributes) throws IOException {
+    public String renamePost(String filePath, String newName, RedirectAttributes redirectAttributes) {
         File currentFile = new File(filePath);
         if (!currentFile.exists() && currentFile.isDirectory()) {
             redirectAttributes.addFlashAttribute("message", "존재하지 않는 디렉터리입니다.");
