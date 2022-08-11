@@ -103,12 +103,7 @@ public class FileExplorer {
     @PostMapping("/fileExplorer/write")
     public String writePost(String filePath, String fileName, String fileContent, RedirectAttributes redirectAttributes) throws IOException {
         File file = new File(filePath);
-        if (!file.exists() && file.isDirectory()) {
-            redirectAttributes.addFlashAttribute("message", "존재하지 않는 디렉터리입니다.");
-            return "redirect:/fileExplorer/read";
-        }
-        if (!file.exists()) {
-            redirectAttributes.addFlashAttribute("message", "존재하지 않는 파일입니다.");
+        if (isFileOrDirectoryPresent(file, redirectAttributes)) {
             return "redirect:/fileExplorer/read";
         }
         if (file.isDirectory() && fileName != null) {
@@ -132,16 +127,7 @@ public class FileExplorer {
     @PostMapping("/fileExplorer/delete")
     public String deletePost(String filePath, RedirectAttributes redirectAttributes) {
         File file = new File(filePath);
-        if (!file.exists() && file.isDirectory()) {
-            redirectAttributes.addFlashAttribute("message", "존재하지 않는 디렉터리입니다.");
-            return "redirect:/fileExplorer/read";
-        }
-        if (!file.exists()) {
-            redirectAttributes.addFlashAttribute("message", "존재하지 않는 파일입니다.");
-            return "redirect:/fileExplorer/read";
-        }
-        if (file.isDirectory()) {
-            redirectAttributes.addFlashAttribute("message", "디렉터리입니다.");
+        if (isFileOrDirectoryPresent(file, redirectAttributes)) {
             return "redirect:/fileExplorer/read";
         }
         if (file.delete()) {
@@ -155,12 +141,7 @@ public class FileExplorer {
     @PostMapping("/fileExplorer/rename")
     public String renamePost(String filePath, String newName, RedirectAttributes redirectAttributes) {
         File currentFile = new File(filePath);
-        if (!currentFile.exists() && currentFile.isDirectory()) {
-            redirectAttributes.addFlashAttribute("message", "존재하지 않는 디렉터리입니다.");
-            return "redirect:/fileExplorer/read";
-        }
-        if (!currentFile.exists()) {
-            redirectAttributes.addFlashAttribute("message", "존재하지 않는 파일입니다.");
+        if (isFileOrDirectoryPresent(currentFile, redirectAttributes)) {
             return "redirect:/fileExplorer/read";
         }
         File fileWithChangedName = new File(currentFile.getAbsolutePath().replace(currentFile.getName(), newName));
@@ -170,5 +151,17 @@ public class FileExplorer {
         }
         redirectAttributes.addFlashAttribute("message", "파일 이름 변경를 실패하였습니다.");
         return "redirect:/fileExplorer/read";
+    }
+
+    public boolean isFileOrDirectoryPresent(File file, RedirectAttributes redirectAttributes) {
+        if (!file.exists() && file.isDirectory()) {
+            redirectAttributes.addFlashAttribute("message", "존재하지 않는 디렉터리입니다.");
+            return true;
+        }
+        if (!file.exists()) {
+            redirectAttributes.addFlashAttribute("message", "존재하지 않는 파일입니다.");
+            return true;
+        }
+        return false;
     }
 }
