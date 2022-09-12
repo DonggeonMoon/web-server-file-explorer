@@ -19,7 +19,7 @@ public class FileExplorer {
     @GetMapping("/")
     @ResponseBody
     public String test() {
-        return "테스트 2222";
+        return "테스트 3333";
     }
 
     @GetMapping("/fileExplorer")
