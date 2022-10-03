@@ -3,44 +3,79 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-    <title>Title</title>
+    <title>파일 탐색기</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css"/>
 </head>
 <body>
-realPath: ${realPath}
-<div id="jstree">
-    <ul>
-        <li>Root node 1
-            <ul>
-                <li id="child_node_1">Child node 1</li>
-                <li>Child node 2</li>
-            </ul>
-        </li>
-        <li>Root node 2</li>
-    </ul>
-</div>
+경로: <input type="text" style="width: 100%" value="${realPath}" readonly>
+<hr>
+<div id="jstree"></div>
+<hr>
 <button>demo button</button>
-<br/>
-${file}
-<br/>
----------------------------------------------
-<br/>
 <a href="/fileExplorer/add?filePath=${fn:replace(realPath, '\\', '/')}" target="frame_right">+ 파일 추가</a>
-<br/>
-<c:forEach var="item" items="${data}">
-    <a href="/fileExplorer/read?filePath=${fn:replace(realPath, '\\', '/')}${fn:replace(item.getName(), '\\', '/')}" target="frame_right">${item.getName()}</a>
-    <br/>
-</c:forEach>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"/>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
 <script>
     $(function () {
-        $('#jstree').jstree();
-
+        $('#jstree').jstree({
+            "plugins": ["changed", "contextmenu", "dnd", "massload", "search", "state", "unique", "wholerow"],
+            'core': {
+                'data': {
+                    'url': function (node) {
+                        return node.id === '#' ? '/api/getRoot' : '/api/getChildren'
+                    },
+                    'data': function (node) {
+                        return {
+                            'id': node.id
+                        }
+                    }
+                },
+                'check_callback': function (operation, node, node_parent, node_position, more) {
+                    // operation can be 'create_node', 'rename_node', 'delete_node', 'move_node', 'copy_node' or 'edit'
+                    // in case of 'rename_node' node_position is filled with the new node name
+                    return operation === 'rename_node' ? true : false;
+                }
+            },
+            "contextmenu": {
+                "show_at_node": false,
+                "items": {
+                    "추가": {
+                        "label": "추가",
+                        "action": function (obj) {
+                            alert("추가");
+                            console.log(obj)
+                            window.parent.frame_right.document.location.href = "/fileExplorer/add?filePath=" + obj.reference[0].id.replaceAll("\\", "/").replaceAll("_anchor", "");
+                            $.vakata.context.hide()
+                        },
+                        "_class": "class",
+                    },
+                    "수정": {
+                        "label": "편집",
+                        "action": function (obj) {
+                            alert("편집");
+                            window.parent.frame_right.document.location.href = "/fileExplorer/read?filePath=" + obj.reference[0].id.replaceAll("\\", "/").replaceAll("_anchor", "");
+                            $.vakata.context.hide()
+                        },
+                        "_class": "class",
+                    },
+                    "이름 바꾸기": {
+                        "label": "이름 바꾸기",
+                        "action": function (obj) {
+                            alert("이름 바꾸기");
+                            window.parent.frame_right.document.location.href = "/fileExplorer/rename?filePath=" + obj.reference[0].id.replaceAll("\\", "/").replaceAll("_anchor", "");
+                            $.vakata.context.hide()
+                        },
+                        "_class": "class",
+                    }
+                }
+            }
+        });
+        // 7 bind to events triggered on the tree
         $('#jstree').on("changed.jstree", function (e, data) {
             console.log(data.selected);
         });
-
+        // 8 interact with the tree - either way is OK
         $('button').on('click', function () {
             $('#jstree').jstree(true).select_node('child_node_1');
             $('#jstree').jstree('select_node', 'child_node_1');

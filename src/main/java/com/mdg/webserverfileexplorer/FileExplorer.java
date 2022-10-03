@@ -13,13 +13,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 @Controller
 public class FileExplorer {
     @GetMapping("/")
-    @ResponseBody
     public String test() {
-        return "테스트 3333";
+        return "redirect:/fileExplorer";
     }
 
     @GetMapping("/fileExplorer")
@@ -30,30 +32,69 @@ public class FileExplorer {
     @GetMapping("/fileExplorer/left")
     public String leftGet(HttpServletRequest request, Model model) {
         String realPath = request.getServletContext().getRealPath("/");
-        File file = new File(realPath);
-
-        File[] fileArray = file.listFiles();
-
         model.addAttribute("realPath", realPath);
-        model.addAttribute("file", file);
-        model.addAttribute("data", fileArray);
+
         return "left";
     }
 
+    @GetMapping("/api/getRoot")
+    @ResponseBody
+    public Object[] getRoot(HttpServletRequest request, @RequestParam(required = false) String id) {
+        return getJSTreeData(request, id);
+    }
+
+    @GetMapping("/api/getChildren")
+    @ResponseBody
+    public Object[] getChildren(HttpServletRequest request, @RequestParam(required = false) String id) {
+        return getJSTreeData(request, id);
+    }
+
+    private Object[] getJSTreeData(HttpServletRequest request, String id) {
+        String realPath = id;
+        if ("#".equals(id) || id == null) {
+            realPath = request.getServletContext().getRealPath("/");
+        }
+
+        File file = new File(realPath);
+        String[] fileNameArray = Objects.requireNonNull(file.list());
+        File[] fileArray = Objects.requireNonNull(file.listFiles());
+        Object[] array = new Object[fileNameArray.length];
+        int count = 0;
+        for (File childrenFile : fileArray) {
+            Map<String, Object> map = new HashMap<>();
+
+            map.put("id", childrenFile.getAbsolutePath());
+            map.put("text", childrenFile.getName());
+            map.put("children", true);
+            if (childrenFile.isFile() || Objects.requireNonNull(childrenFile.listFiles()).length == 0) {
+                map.put("children", false);
+            }
+
+            array[count] = map;
+            count++;
+        }
+
+        return array;
+    }
+
     @GetMapping("/fileExplorer/read")
-    public String readGet(Model model, @RequestParam(value = "filePath", required = false) String filePath) throws IOException {
+    public String readGet(Model model, @RequestParam(required = false) String filePath) throws IOException {
+        model.addAttribute("mode", "read");
         if (filePath == null || filePath.equals("")) {
             model.addAttribute("message", "데이터가 없거나 경로가 입력되지 않았습니다.");
+
             return "right";
         }
         File file = new File(filePath);
         if (!file.exists()) {
             model.addAttribute("message", "존재하지 않는 파일입니다.");
             model.addAttribute("filePath", filePath);
+
             return "right";
         }
         if (file.isDirectory()) {
             model.addAttribute("message", "디렉터리입니다.");
+
             return "right";
         }
         FileReader fileReader = new FileReader(file);
@@ -65,11 +106,13 @@ public class FileExplorer {
         fileReader.close();
         model.addAttribute("filePath", filePath);
         model.addAttribute("data", stringBuilder.toString());
+
         return "right";
     }
 
     @GetMapping("/fileExplorer/add")
     public String addGet(String filePath, Model model) {
+        model.addAttribute("mode", "add");
         File file = new File(filePath);
         if (!file.isDirectory()) {
             model.addAttribute("message", "디렉터리가 아닙니다.");
@@ -143,6 +186,15 @@ public class FileExplorer {
         }
         redirectAttributes.addFlashAttribute("message", "파일 삭제를 실패하였습니다.");
         return "redirect:/fileExplorer/read";
+    }
+
+    @GetMapping("/fileExplorer/rename")
+    public String renameGet(Model model, String filePath, String newName) {
+        model.addAttribute("mode", "rename");
+        model.addAttribute("message", "변경할 이름을 입력해주세요.");
+        model.addAttribute("filePath", filePath);
+        model.addAttribute("data", "");
+        return "right";
     }
 
     @PostMapping("/fileExplorer/rename")
