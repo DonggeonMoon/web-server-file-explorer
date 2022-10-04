@@ -11,9 +11,6 @@
 <hr>
 <div id="jstree"></div>
 <hr>
-<button>demo button</button>
-<a href="/fileExplorer/add?filePath=${fn:replace(realPath, '\\', '/')}" target="frame_right">+ 파일 추가</a>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
 <script>
@@ -40,12 +37,22 @@
             "contextmenu": {
                 "show_at_node": false,
                 "items": {
-                    "추가": {
-                        "label": "추가",
+                    "파일 추가": {
+                        "label": "파일 추가",
                         "action": function (obj) {
-                            alert("추가");
+                            alert("파일 추가");
                             console.log(obj)
-                            window.parent.frame_right.document.location.href = "/fileExplorer/add?filePath=" + obj.reference[0].id.replaceAll("\\", "/").replaceAll("_anchor", "");
+                            window.parent.frame_right.document.location.href = "/fileExplorer/addFile?path=" + obj.reference[0].id.replaceAll("\\", "/").replaceAll("_anchor", "");
+                            $.vakata.context.hide()
+                        },
+                        "_class": "class",
+                    },
+                    "디렉터리 추가": {
+                        "label": "디렉터리 추가",
+                        "action": function (obj) {
+                            alert("디렉터리 추가");
+                            console.log(obj)
+                            window.parent.frame_right.document.location.href = "/fileExplorer/addDirectory?path=" + obj.reference[0].id.replaceAll("\\", "/").replaceAll("_anchor", "");
                             $.vakata.context.hide()
                         },
                         "_class": "class",
@@ -54,7 +61,7 @@
                         "label": "편집",
                         "action": function (obj) {
                             alert("편집");
-                            window.parent.frame_right.document.location.href = "/fileExplorer/read?filePath=" + obj.reference[0].id.replaceAll("\\", "/").replaceAll("_anchor", "");
+                            window.parent.frame_right.document.location.href = "/fileExplorer/read?path=" + obj.reference[0].id.replaceAll("\\", "/").replaceAll("_anchor", "");
                             $.vakata.context.hide()
                         },
                         "_class": "class",
@@ -63,7 +70,7 @@
                         "label": "이름 바꾸기",
                         "action": function (obj) {
                             alert("이름 바꾸기");
-                            window.parent.frame_right.document.location.href = "/fileExplorer/rename?filePath=" + obj.reference[0].id.replaceAll("\\", "/").replaceAll("_anchor", "");
+                            window.parent.frame_right.document.location.href = "/fileExplorer/rename?path=" + obj.reference[0].id.replaceAll("\\", "/").replaceAll("_anchor", "");
                             $.vakata.context.hide()
                         },
                         "_class": "class",
